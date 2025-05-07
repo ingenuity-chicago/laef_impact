@@ -20,10 +20,10 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
-		// paths: {
-        //     //base: process.argv.includes('dev') ? '' : process.env.BASE_PATH ///portfolio
-		// 	base: process.env.NODE_ENV === 'production' ? '/' : '', // process.env.BASE_PATH ///portfolio
-        // }
+		paths: {
+            //base: process.argv.includes('dev') ? '' : process.env.BASE_PATH ///portfolio
+			base: process.env.NODE_ENV === 'dev' ? '/dev' : '', // process.env.BASE_PATH ///portfolio
+        }
 	}
 };
 
