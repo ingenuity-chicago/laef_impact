@@ -2,6 +2,7 @@
     import scrollama from "scrollama";
     import * as d3 from 'd3';
     import { onMount } from 'svelte';
+	import ChicagoMap from "$lib/visualizations/ChicagoMap.svelte";
 
     // initialize the scrollama
     const scroller = scrollama();
@@ -46,7 +47,7 @@ Scrolly Overlay
         <figure class='sticky_graphic_container'>
             <!--   actual graphic/chart   -->
             <div class='chart'>
-                my first data viz!
+                <ChicagoMap></ChicagoMap>
             </div>
         </figure>
 
@@ -133,13 +134,13 @@ article {
     position: -webkit-sticky;
     position: sticky;
     top: 0;
+    min-height: 50vh;
 }
 
 .chart {
-    padding-top: 50vh;
+    padding-top: 10vh;
     text-align: center;
     background-color: rgb(115, 202, 69);
-    height: 10rem;
 }
 
 </style>
