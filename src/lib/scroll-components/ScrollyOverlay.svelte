@@ -140,7 +140,7 @@ article {
 .chart {
     padding-top: 10vh;
     text-align: center;
-    background-color: rgb(115, 202, 69);
+    background-color: lightblue;
 }
 
 </style>

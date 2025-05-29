@@ -84,6 +84,28 @@
                 // Handle err
                 console.log(err);
             });
+
+        // loading in school points as csv with lat/long
+
+        // d3.csv(`${base}/data/all_schools.csv`, (d) => {
+        //     let point: School = {
+        //         school_name: d.school_name,
+        //         community_area: d.community_area,
+        //         category: d.category_simple,
+        //         certification: +d.final_score, // check which ones are which again
+        //         count_partnerships: +d.count_partnerships,
+        //         laef: d.laef == "TRUE",
+        //         longitude: parseFloat(d.longitude),
+        //         latitude: parseFloat(d.latitude),
+        //     };
+        //     return point
+        // }).then(function(data) {
+        //     console.log(data);
+        //     plotSchoolPoints(data);
+        // });
+
+        //let projectedPoints: [number,number][] = [];
+        //projectedPoints.push(projection((d.geometry as GeoJSON.Point).coordinates as [number, number])!)
         
     }
 </script>
