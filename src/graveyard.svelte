@@ -107,6 +107,33 @@
         //let projectedPoints: [number,number][] = [];
         //projectedPoints.push(projection((d.geometry as GeoJSON.Point).coordinates as [number, number])!)
         
+        // trigger changes on click
+
+        // let counter = 0;
+        // svg.on('click', (event: KeyboardEvent) => {
+        //     switch (counter) {
+        //         case 0:
+        //             showHaugan();
+        //             break;
+        //         case 1:
+        //             showAllSchools();
+        //             break;
+        //         case 2:
+        //             showLaefSchools();
+        //             break;
+        //         case 3:
+        //             showSchoolType();
+        //             break;
+        //         case 4: 
+        //             showSchoolCert();
+        //             break;
+        //         case 5:
+        //             removeSchools();
+        //             renderCloropleth();
+        //             break;
+        //     } 
+        //     counter ++ ;
+        // });
     }
 </script>
 

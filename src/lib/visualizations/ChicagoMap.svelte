@@ -8,9 +8,34 @@
     import * as topojsonS from "topojson-server";
 
     let vis: HTMLElement;
-    let width = 400;
+    let width = 300;
     let height = 1.3*width;
     let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+
+    let { step } = $props();
+
+    // # 5 = Incomplete Data
+    // # 4 = Emerging
+    // # 3 = Developing
+    // # 2 = Strong
+    // # 1 = Excelling
+    const colorMap: Record<string, string> = {
+        "$0": "#fff",
+        "$1 - $20,000": "#cde6cd",
+        "$20,001 - $40,000": "#a9cfa3",
+        "$40,001 - $70,000": "#5f9e66",
+        "$70,001 - $110,000": "#27663b",
+        "laef": "purple",
+        "5": "transparent", // incomplete_data
+        "4": "yellow", // emerging
+        "3": "green", // developing
+        "2": "transparent", // strong
+        "1": "transparent", // excelling
+        "high_school": "orange",
+        "elementary_school": "blue",
+        "combination": "pink",
+        "middle_school": "pink"
+    }
 
     onMount(() => {
         init();
@@ -31,10 +56,11 @@
     function init(): void {
         // Create the SVG container.
         svg = d3.select(vis).append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .attr("viewBox", [0, 0, width, height])
-            .attr("style", "max-width: 100%; height: auto;");
+            .attr("width", "95%")
+            .attr("height", "95%")
+            .attr("viewBox", [0, 0, width, height]) //[-width/2, -height/2, width*2, height*2]
+            .attr("style", "max-height: 80vh;");
+        // decide if want to center map
 
         // loading data
         d3.json<FeatureCollection>(`${base}/data/comm_areas_amt_granted.geojson`) 
@@ -42,36 +68,37 @@
             .catch((err) => {
                 console.log(err); // TODO: Handle error
             });
-        
-        let counter = 0;
-
-        svg.on('click', (event: KeyboardEvent) => {
-            console.log(counter);
-            switch (counter) {
-                case 0:
-                    showHaugan();
-                    break;
-                case 1:
-                    showAllSchools();
-                    break;
-                case 2:
-                    showLaefSchools();
-                    break;
-                case 3:
-                    showSchoolType();
-                    break;
-                case 4: 
-                    showSchoolCert();
-                    break;
-                case 5:
-                    removeSchools();
-                    renderCloropleth();
-                    break;
-            } 
-            counter ++ ;
-        });
-
     }
+
+    $effect(() => {
+        switch (step) {
+            case 0: 
+                hideSchools();
+                break;
+            case 1:
+                showSchools();
+                showHaugan();
+                break;
+            case 2:
+                showAllSchools();
+                break;
+            case 3:
+                showLaefSchools();
+                break;
+            case 4:
+                showSchoolType();
+                break;
+            case 5: 
+                removeCloropleth();
+                showSchools();
+                showSchoolCert();
+                break;
+            case 6:
+                hideSchools();
+                renderCloropleth();
+                break;
+        } 
+    });
 
     function getSchoolPoints(chi_projection: d3.GeoProjection) {
         d3.json<FeatureCollection>(`${base}/data/all_schools.geojson`) 
@@ -108,6 +135,7 @@
             .enter()
             .append("circle")
             .attr("class", "school")  
+            .classed("laef", (d) => d.properties?.laef)
             .attr("r", 3)
             .attr("cx", d => d.coordinates[0])
             .attr("cy", d => d.coordinates[1])
@@ -128,51 +156,54 @@
     function showAllSchools() {
         d3.selectAll<SVGCircleElement, Feature>(".school")
             .transition()
-            .duration(2000)
+            .duration(1000)
             .attr("r", 2)
-            .attr("fill", "grey" )
+            .attr("fill", "grey");
     }
 
     function showLaefSchools() {
-        d3.selectAll<SVGCircleElement, Feature>(".school")
-            .classed("laef", (d) => d.properties?.laef)
+        d3.selectAll<SVGCircleElement, Feature>(".school") // could change this to just access .laef
             .transition()
-            .duration(1500)
+            .duration(1000)
             .attr("r", 3)
             .attr("fill", function(d) {
                 return d.properties?.laef ? colorMap["laef"] : "transparent"} )
     }
 
     function showSchoolType() {
-        console.log("Show school type")
         d3.selectAll<SVGCircleElement, Feature>(".laef")
             .transition()
-            .duration(1500)
-            .attr("fill", function(d) {          
+            .duration(1000)
+            .attr("fill", function(d) {         
                 return  colorMap[d.properties?.category] } )
     }
 
     function showSchoolCert() {
         d3.selectAll<SVGCircleElement, Feature>(".laef")
             .transition()
-            .duration(1500)
-            .attr("fill", function(d) {          
+            .duration(1000)
+            .attr("fill", function(d) {        
                 return  colorMap[d.properties?.certification] } )
     }
 
-    function removeSchools() {
-        d3.selectAll<SVGCircleElement, Feature>(".laef")
+    function showSchools() {
+        d3.selectAll<SVGCircleElement, Feature>(".school")
+            .transition()
+            .duration(1000)
+            .attr("visibility", "visible");
+    }
+    function hideSchools() {
+        d3.selectAll<SVGCircleElement, Feature>(".school")
             .transition()
             .duration(2000)
-            .attr("fill", "transparent")
-            .remove();
+            .attr("visibility", "hidden"); // i think the transition duration doesn't work on this as much as transparency
     }
 
     function setupMap(geodata?: FeatureCollection) {
         if (geodata === undefined) { return; }
         
         const community_areas_geo = loadFeatureCollection(geodata) as FeatureCollection;
-        renderBlankMap(community_areas_geo);
+        renderBaseMap(community_areas_geo);
     }
 
     function loadFeatureCollection(geodata: FeatureCollection) {
@@ -182,56 +213,47 @@
         // .text(d => `${d.properties.name}, ${statemap.get(d.id.slice(0, 2)).properties.name}\n${valuemap.get(d.id)}%`); 
     }
 
-    function renderBlankMap(community_areas_geo: FeatureCollection) {
+    function renderBaseMap(community_areas_geo: FeatureCollection) {
         const chi_projection = d3.geoMercator().fitSize([width, height], community_areas_geo);
+        let zoomed = chi_projection.fitExtent([[-1400,-400], [width*3.5, height*3.5]], community_areas_geo)
+        let unzoomed = chi_projection.fitSize([width, height], community_areas_geo);
         let geoGenerator = d3.geoPath().projection(chi_projection)
     
-        svg.append('g')
+        const path = svg.append('g')
             .selectAll("path") 
             .data(community_areas_geo.features)
             .join("path")
                 .attr("class", "comm_area")  
                 .attr('fill-opacity', 0)
                 .attr("stroke", '#fff') // make it the same color as the background to create gap effect
-                .attr("stroke-width", 0.5)
+                .attr("stroke-width", 0.8)
                 .attr("d", geoGenerator)
-            .append("title")
+                .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
+                .attr("stroke-dashoffset", d => geoGenerator.measure(d))
+                .transition()
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0)
+                .duration(4000)
 
         // put these somewhere else
         getSchoolPoints(chi_projection);
     }
 
-    const colorMap: Record<string, string> = {
-        "$0": "#fff",
-        "$1 - $20,000": "#cde6cd",
-        "$20,001 - $40,000": "#a9cfa3",
-        "$40,001 - $70,000": "#5f9e66",
-        "$70,001 - $110,000": "#27663b",
-        "laef": "purple",
-        "5": "transparent", // incomplete_data
-        "4": "yellow", // emerging
-        "3": "green", // developing
-        "2": "transparent", // strong
-        "1": "transparent", // excelling
-        "high_school": "orange",
-        "elementary_school": "blue",
-        "combination": "pink",
-        "middle_school": "pink"
-    }
-
-// # 5 = Incomplete Data
-// # 4 = Emerging
-// # 3 = Developing
-// # 2 = Strong
-// # 1 = Excelling
-
     function renderCloropleth() {
         d3.selectAll<SVGPathElement, Feature>(".comm_area")
             .transition()
-            .duration(2500)
+            .duration(1000)
             .attr("fill-opacity", 1)
             .attr("fill", function(d) {
                 return colorMap[(d.properties?.plt_bck)]} )
+    }
+
+    function removeCloropleth() {
+        d3.selectAll<SVGPathElement, Feature>(".comm_area")
+            .transition()
+            .duration(1000)
+            .attr("fill-opacity", 1)
+            .attr("fill", "transparent");
     }
     
 </script>
@@ -240,4 +262,10 @@
     <div id="vis" bind:this={vis}></div>
 </main>
 
-<style></style>
+<style>
+
+/* :global(.inactive){
+    visibility: visible;
+} */
+
+</style>

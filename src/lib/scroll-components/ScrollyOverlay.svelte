@@ -6,8 +6,10 @@
 
     // initialize the scrollama
     const scroller = scrollama();
+    let step = $state(0);
 
     function updateChart(index: number, stepSel: Element, container: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
+            step = index;
             // const sel = container.select(`[data-index='${index}']`);
             // const width = sel.attr('data-width');
             // container.select('.bar-inner').style('width', width);
@@ -20,11 +22,13 @@
     function init(): void { // runs once on load
         const container = d3.select('#scrolly-overlay'); // using d3 for convenience, and storing a selected elements
         const stepSel = container.selectAll('.step');
+        // i want to call functions in chicago map. 
 
         scroller.setup({
 			step: '.scroll_text .step', // the step elements
 			offset: 0.5, // set the trigger to be 1/2 way down screen
 			debug: false, // display the trigger offset for testing
+            progress: true
 		})
 		.onStepEnter(response => {
             console.log("step entered: " + response.index);
@@ -32,10 +36,13 @@
 			updateChart(response.index, response.element, container);
 		})
         .onStepExit(response => {
-            console.log("step exited: " + response.index);
+            console.log("step exited: " + response.element);
             response.element.classList.remove('active');
 			updateChart(response.index, response.element, container);
-		});
+		})
+        // .onStepProgress(response => {
+        //     console.log("progress: " + response.progress);
+		// });
     }
 
 </script>
@@ -47,7 +54,7 @@ Scrolly Overlay
         <figure class='sticky_graphic_container'>
             <!--   actual graphic/chart   -->
             <div class='chart'>
-                <ChicagoMap></ChicagoMap>
+                <ChicagoMap {step}></ChicagoMap>
             </div>
         </figure>
 
@@ -55,25 +62,43 @@ Scrolly Overlay
         <article class='scroll_text'>
             <div class="wrapper">
                 <div class="step" data-step="a">
-                    <p>STEP 1</p>
+                    <p>STEP 0</p>
                 </div>
             </div>
 
             <div class="wrapper">
                 <div class="step" data-step="b">
-                    <p>STEP 2</p>
+                    <p>STEP 1</p>
                 </div>
             </div>
 
             <div class="wrapper">
                 <div class="step" data-step="c">
-                    <p>STEP 3</p>
+                    <p>STEP 2</p>
                 </div>
             </div>
 
             <div class="wrapper">
                 <div class="step" data-step="d">
+                    <p>STEP 3</p>
+                </div>
+            </div>
+
+            <div class="wrapper">
+                <div class="step" data-step="e">
                     <p>STEP 4</p>
+                </div>
+            </div>
+
+            <div class="wrapper">
+                <div class="step" data-step="f">
+                    <p>STEP 5</p>
+                </div>
+            </div>
+
+            <div class="wrapper">
+                <div class="step" data-step="f">
+                    <p>STEP 6</p>
                 </div>
             </div>
         </article>
@@ -138,7 +163,7 @@ article {
 }
 
 .chart {
-    padding-top: 10vh;
+    /* padding-top: 10vh; */
     text-align: center;
     background-color: lightblue;
 }
