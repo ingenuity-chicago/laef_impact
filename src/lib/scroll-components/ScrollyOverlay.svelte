@@ -6,7 +6,7 @@
 
     // initialize the scrollama
     const scroller = scrollama();
-    let step = $state(0);
+    let step = $state(-1);
 
     function updateChart(index: number, stepSel: Element, container: d3.Selection<d3.BaseType, unknown, HTMLElement, any>) {
             step = index;
@@ -26,7 +26,7 @@
 
         scroller.setup({
 			step: '.scroll_text .step', // the step elements
-			offset: 0.5, // set the trigger to be 1/2 way down screen
+			offset: 0.9, // set the trigger to be 90% way down screen
 			debug: false, // display the trigger offset for testing
             progress: true
 		})
@@ -62,31 +62,36 @@ Scrolly Overlay
         <article class='scroll_text'>
             <div class="wrapper">
                 <div class="step" data-step="a">
-                    <p>STEP 0</p>
+                    <p>Every student should have access to the transformative power of the arts. </p>
                 </div>
             </div>
 
             <div class="wrapper">
                 <div class="step" data-step="b">
-                    <p>STEP 1</p>
+                    <!-- <p>STEP 1</p> -->
+                    <p>Something to introduce Chicago</p>
                 </div>
             </div>
 
             <div class="wrapper">
                 <div class="step" data-step="c">
-                    <p>STEP 2</p>
+                    <p>
+                        In the 2020-21 school year, Helge A Haugan Elementary School did not offer any dance courses to its students. What began as a vision–to cultivate a vibrant dance program at the school–has become reality. Through support from the Lollapalooza Arts Education Fund, Haugan Elementary was awarded more than $36,000 in grants during the 2021-22 and 2022-23 school years. 
+                    </p>
                 </div>
             </div>
 
             <div class="wrapper">
-                <div class="step" data-step="d">
-                    <p>STEP 3</p>
+                <div class="step" data-step="d"> 
+                    <!-- <p>STEP 3, instead of hiding, i can use step progress</p> --> 
+                     <p>With this funding, the school transformed a 110-year old classroom into a functional and inspiring dance studio– complete with a new sprung dance floor to support movement, creativity, and expression. By the 2023-24 and 2024-25 school year, Haugan had hired two full-time dance instructors and offered over 40 dance courses across all grades, K-8.  These investments, as originally visioned, ensured that dance was an integral part of the school community.  </p>
                 </div>
             </div>
 
             <div class="wrapper">
                 <div class="step" data-step="e">
-                    <p>STEP 4</p>
+                    <!-- <p>STEP 4</p> -->
+                    <p>IMAGE of sprung floors will appear in this next step</p>
                 </div>
             </div>
 
@@ -97,8 +102,28 @@ Scrolly Overlay
             </div>
 
             <div class="wrapper">
-                <div class="step" data-step="f">
+                <div class="step" data-step="g">
                     <p>STEP 6</p>
+                </div>
+            </div>
+            <div class="wrapper">
+                <div class="step" data-step="h">
+                    <p>STEP 7</p>
+                </div>
+            </div>
+            <div class="wrapper">
+                <div class="step" data-step="i">
+                    <p>STEP 8</p>
+                </div>
+            </div>
+            <div class="wrapper">
+                <div class="step" data-step="j">
+                    <p>STEP 9</p>
+                </div>
+            </div>
+            <div class="wrapper">
+                <div class="step" data-step="k">
+                    <p>STEP 10</p>
                 </div>
             </div>
         </article>
@@ -128,10 +153,12 @@ article {
 }
 
 .step {			
+    display: flex;
+    align-items: center;
     min-height: 25vh;
 	margin-bottom: 1rem;
-    border: 0.5rem solid purple;
-    background-color: lightgrey;
+    border: 0.5rem solid white;
+    background-color: darkcyan;
 
     p {
         margin: 0;
@@ -144,7 +171,11 @@ article {
     }
 
     &:global(.active){
-        background-color: coral;
+        border-color: lightblue;
+    }
+
+    &:global(.hidden) {
+        visibility: hidden;
     }
 }
 .step:first-of-type {
@@ -165,7 +196,7 @@ article {
 .chart {
     /* padding-top: 10vh; */
     text-align: center;
-    background-color: lightblue;
+    /* background-color: lightblue; */
 }
 
 </style>

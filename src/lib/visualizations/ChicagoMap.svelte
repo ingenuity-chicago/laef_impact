@@ -3,7 +3,7 @@
     import * as d3 from 'd3';
     import { onMount } from 'svelte';
     import { base } from '$app/paths';
-    import type { GeoJsonObject , FeatureCollection, Feature } from "geojson";
+    import type { FeatureCollection, Feature } from "geojson";
     import * as topojsonC from "topojson-client";
     import * as topojsonS from "topojson-server";
 
@@ -53,6 +53,8 @@
         };
     }
 
+    let community_areas_geo: FeatureCollection;
+
     function init(): void {
         // Create the SVG container.
         svg = d3.select(vis).append("svg")
@@ -63,7 +65,7 @@
         // decide if want to center map
 
         // loading data
-        d3.json<FeatureCollection>(`${base}/data/comm_areas_amt_granted.geojson`) 
+        const data = d3.json<FeatureCollection>(`${base}/data/comm_areas_amt_granted.geojson`) 
             .then(setupMap)
             .catch((err) => {
                 console.log(err); // TODO: Handle error
@@ -71,29 +73,53 @@
     }
 
     $effect(() => {
+        console.log("step entered: " + step);
         switch (step) {
-            case 0: 
-                hideSchools();
+            case -1: // load maps and points but hide them
                 break;
-            case 1:
+            case 0:
+                hideSchools();
+                removeMap();
+                break;
+            case 1: 
+                renderBaseMap(community_areas_geo);
+                break;
+            case 2:
+                svg.attr("viewBox", '0, 0, 300, 390');
                 showSchools();
                 showHaugan();
                 break;
-            case 2:
-                showAllSchools();
-                break;
-            case 3:
-                showLaefSchools();
+            case 3: 
+                svg
+                    .transition()
+                    .duration(1500)
+                    .attr("viewBox", '100, 40, 100, 130');
+                //renderZoomMap(community_areas_geo);
                 break;
             case 4:
+                // insert image of floors
+                break;
+            case 5:
+                svg
+                    .transition()
+                    .duration(1500)
+                    .attr("viewBox", '0, 0, 300, 390');
+                break;
+            case 6:
+                showAllSchools();
+                break;
+            case 7:
+                showLaefSchools();
+                break;
+            case 8:
                 showSchoolType();
                 break;
-            case 5: 
+            case 9: 
                 removeCloropleth();
                 showSchools();
                 showSchoolCert();
                 break;
-            case 6:
+            case 10:
                 hideSchools();
                 renderCloropleth();
                 break;
@@ -127,8 +153,6 @@
             }
             schools.push(school);
         });
-
-        console.log(schools);
 
         svg.append('g').selectAll("school")
             .data(schools)
@@ -202,8 +226,8 @@
     function setupMap(geodata?: FeatureCollection) {
         if (geodata === undefined) { return; }
         
-        const community_areas_geo = loadFeatureCollection(geodata) as FeatureCollection;
-        renderBaseMap(community_areas_geo);
+        community_areas_geo = loadFeatureCollection(geodata) as FeatureCollection;
+        //renderBaseMap(community_areas_geo);
     }
 
     function loadFeatureCollection(geodata: FeatureCollection) {
@@ -214,9 +238,18 @@
     }
 
     function renderBaseMap(community_areas_geo: FeatureCollection) {
-        const chi_projection = d3.geoMercator().fitSize([width, height], community_areas_geo);
-        let zoomed = chi_projection.fitExtent([[-1400,-400], [width*3.5, height*3.5]], community_areas_geo)
-        let unzoomed = chi_projection.fitSize([width, height], community_areas_geo);
+        // const chi_projection = d3.geoMercator().fitSize([width, height], community_areas_geo);
+        // let zoomed = chi_projection.fitExtent([[-1400,-400], [width*3.5, height*3.5]], community_areas_geo)
+        // let unzoomed = chi_projection.fitSize([width, height], community_areas_geo);
+
+        if (community_areas_geo == undefined) {
+            console.warn("Data not loaded yet"); // a problem if you refresh the page while on this section
+            return;
+        }
+        
+        let chi_projection = setProjection(community_areas_geo, false);
+        //renderMap(community_areas_geo, chi_projection)
+
         let geoGenerator = d3.geoPath().projection(chi_projection)
     
         const path = svg.append('g')
@@ -233,10 +266,57 @@
                 .transition()
                 .ease(d3.easeLinear)
                 .attr("stroke-dashoffset", 0)
-                .duration(4000)
+                .duration(3000)
 
-        // put these somewhere else
+        // TODO: put these somewhere else
         getSchoolPoints(chi_projection);
+    }
+
+    function renderZoomMap(community_areas_geo: FeatureCollection) {
+        if (community_areas_geo == undefined) {
+            console.warn("Data not loaded yet");
+            return;
+        }
+        let chi_projection = setProjection(community_areas_geo, true);
+
+        // change this so it updates the current map projection instead of buliding a whole new map, and with a transition
+        // renderMap(community_areas_geo, chi_projection)
+    }
+
+    function setProjection(community_areas_geo: FeatureCollection, zoom: boolean) {
+        if (zoom) {
+            return d3.geoMercator().fitExtent([[-1400,-400], [width*3.5, height*3.5]], community_areas_geo)
+        }
+        return d3.geoMercator().fitSize([width, height], community_areas_geo);
+    }
+
+    function renderMap(community_areas_geo: FeatureCollection, projection: d3.GeoProjection) {
+        let geoGenerator = d3.geoPath().projection(projection);
+
+        const path = svg.append('g')
+            .attr("class", "chi_map") 
+            .selectAll("path") 
+            .data(community_areas_geo.features)
+            .join("path")
+                .attr("class", "comm_area")  
+                .attr('fill-opacity', 0)
+                .attr("stroke", '#fff') // make it the same color as the background to create gap effect
+                .attr("stroke-width", 0.8)
+                .attr("d", geoGenerator)
+                .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
+                .attr("stroke-dashoffset", d => geoGenerator.measure(d))
+                .transition()
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0)
+                .duration(4000)
+    }
+
+    function removeMap() {
+        d3.selectAll<SVGPathElement, Feature>(".comm_area")
+            .transition()
+            .duration(1000)
+            .attr("fill-opacity", 0)
+            .remove(); // it's not waiting to remove
     }
 
     function renderCloropleth() {
