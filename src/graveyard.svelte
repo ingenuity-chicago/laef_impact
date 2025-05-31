@@ -134,6 +134,34 @@
         //     } 
         //     counter ++ ;
         // });
+
+        // function renderMap(community_areas_geo: FeatureCollection, projection: d3.GeoProjection) {
+        //     let geoGenerator = d3.geoPath().projection(projection);
+
+        //     const path = svg.append('g')
+        //         .attr("class", "chi_map") 
+        //         .selectAll("path") 
+        //         .data(community_areas_geo.features)
+        //         .join("path")
+        //             .attr("class", "comm_area")  
+        //             .attr('fill-opacity', 0)
+        //             .attr("stroke", '#fff') // make it the same color as the background to create gap effect
+        //             .attr("stroke-width", 0.8)
+        //             .attr("d", geoGenerator)
+        //             .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
+        //             .attr("stroke-dashoffset", d => geoGenerator.measure(d))
+        //             .transition()
+        //             .ease(d3.easeLinear)
+        //             .attr("stroke-dashoffset", 0)
+        //             .duration(4000)
+        // }
+
+        // function setProjection(community_areas_geo: FeatureCollection, zoom: boolean) {
+        //     if (zoom) {
+        //         return d3.geoMercator().fitExtent([[-1400,-400], [width*3.5, height*3.5]], community_areas_geo)
+        //     }
+        //     return d3.geoMercator().fitSize([width, height], community_areas_geo);
+        // }
     }
 </script>
 

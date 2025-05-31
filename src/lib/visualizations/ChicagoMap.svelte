@@ -11,6 +11,9 @@
     let width = 300;
     let height = 1.3*width;
     let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    let community_areas_geo: FeatureCollection;
+    let schools: School[] = [];
+    let projection: d3.GeoProjection;
 
     let { step } = $props();
 
@@ -39,6 +42,12 @@
 
     onMount(() => {
         init();
+        // on refresh, keep track of step (This isn't working properly)
+        // window.location.hash = `#step-${step}`;
+        // const stepFromHash = parseInt(window.location.hash.replace("#step-", ""));
+        // if (!isNaN(stepFromHash)) {
+        //     updateVis(stepFromHash);
+        // }
     });
 
     interface School {
@@ -53,36 +62,49 @@
         };
     }
 
-    let community_areas_geo: FeatureCollection;
-
-    function init(): void {
+    function init() {
         // Create the SVG container.
         svg = d3.select(vis).append("svg")
+            .attr("class", "canvas")
             .attr("width", "95%")
             .attr("height", "95%")
             .attr("viewBox", [0, 0, width, height]) //[-width/2, -height/2, width*2, height*2]
             .attr("style", "max-height: 80vh;");
         // decide if want to center map
 
+        setIntroText();
+
         // loading data
-        const data = d3.json<FeatureCollection>(`${base}/data/comm_areas_amt_granted.geojson`) 
-            .then(setupMap)
+        d3.json<FeatureCollection>(`${base}/data/comm_areas_amt_granted.geojson`) 
+            .then((d) => {
+                let projection = setupMap(d);
+                getSchoolPoints(projection)      
+            })
             .catch((err) => {
                 console.log(err); // TODO: Handle error
             });
     }
 
-    $effect(() => {
+    function updateVis(stepFromHash?: number) {
+        // if (stepFromHash !== undefined) {
+        //     step = stepFromHash
+        // }
         console.log("step entered: " + step);
         switch (step) {
             case -1: // load maps and points but hide them
+                // hideSchools();
+                // removeMap();
                 break;
             case 0:
                 hideSchools();
                 removeMap();
+                showIntroText();
                 break;
             case 1: 
-                renderBaseMap(community_areas_geo);
+                hideIntroText();
+                setNormalAspectRaio();
+                renderBaseMap(community_areas_geo, projection);
+                plotSchoolPoints();
                 break;
             case 2:
                 svg.attr("viewBox", '0, 0, 300, 390');
@@ -90,20 +112,13 @@
                 showHaugan();
                 break;
             case 3: 
-                svg
-                    .transition()
-                    .duration(1500)
-                    .attr("viewBox", '100, 40, 100, 130');
-                //renderZoomMap(community_areas_geo);
+                setZoomAspectRaio();
                 break;
             case 4:
                 // insert image of floors
                 break;
             case 5:
-                svg
-                    .transition()
-                    .duration(1500)
-                    .attr("viewBox", '0, 0, 300, 390');
+                setNormalAspectRaio();
                 break;
             case 6:
                 showAllSchools();
@@ -124,21 +139,23 @@
                 renderCloropleth();
                 break;
         } 
-    });
+    }
+
+    $effect(updateVis);
 
     function getSchoolPoints(chi_projection: d3.GeoProjection) {
         d3.json<FeatureCollection>(`${base}/data/all_schools.geojson`) 
-            .then(d => plotSchoolPoints(chi_projection, d))
+            .then(d => loadSchoolData(chi_projection, d))
             .catch((err) => {
                 console.log(err); // TODO: Handle error
             });
     }
-    function plotSchoolPoints(projection: d3.GeoProjection, points?: FeatureCollection) {
-        if (points === undefined) { return; }
-        const schools_topo = topojsonS.topology({"schools": points});    
+
+    function loadSchoolData(chi_projection: d3.GeoProjection, geodata?: FeatureCollection) {
+        if (geodata === undefined) { return; }
+        const schools_topo = topojsonS.topology({"schools": geodata});    
         const schools_geo = topojsonC.feature(schools_topo, schools_topo.objects.schools) as FeatureCollection;
 
-        let schools: School[] = [];
         schools_geo.features.forEach(function(d) {
             let school: School = {                
                 properties: {
@@ -153,19 +170,20 @@
             }
             schools.push(school);
         });
+    }
 
+    function plotSchoolPoints() {
         svg.append('g').selectAll("school")
             .data(schools)
             .enter()
             .append("circle")
+            .raise()
             .attr("class", "school")  
             .classed("laef", (d) => d.properties?.laef)
             .attr("r", 3)
             .attr("cx", d => d.coordinates[0])
             .attr("cy", d => d.coordinates[1])
             .attr("fill", "transparent");
-
-        return schools_geo;
     }
 
     function showHaugan() {
@@ -181,7 +199,7 @@
         d3.selectAll<SVGCircleElement, Feature>(".school")
             .transition()
             .duration(1000)
-            .attr("r", 2)
+            .attr("r", 1.5)
             .attr("fill", "grey");
     }
 
@@ -223,34 +241,29 @@
             .attr("visibility", "hidden"); // i think the transition duration doesn't work on this as much as transparency
     }
 
-    function setupMap(geodata?: FeatureCollection) {
-        if (geodata === undefined) { return; }
+    function setupMap(geodata?: FeatureCollection): d3.GeoProjection {
+        if (geodata === undefined) { console.log("geodata undefined"); return d3.geoMercator(); }
         
         community_areas_geo = loadFeatureCollection(geodata) as FeatureCollection;
+        const chi_projection = d3.geoMercator().fitSize([width, height], community_areas_geo);
+        projection = chi_projection;
+        return chi_projection;
         //renderBaseMap(community_areas_geo);
     }
 
     function loadFeatureCollection(geodata: FeatureCollection) {
         const chiTopo = topojsonS.topology({"community_areas": geodata});    
-        const community_areas_geo = topojsonC.feature(chiTopo, chiTopo.objects.community_areas) as FeatureCollection;
-        return community_areas_geo;               
+        return topojsonC.feature(chiTopo, chiTopo.objects.community_areas) as FeatureCollection;       
         // .text(d => `${d.properties.name}, ${statemap.get(d.id.slice(0, 2)).properties.name}\n${valuemap.get(d.id)}%`); 
     }
 
-    function renderBaseMap(community_areas_geo: FeatureCollection) {
-        // const chi_projection = d3.geoMercator().fitSize([width, height], community_areas_geo);
-        // let zoomed = chi_projection.fitExtent([[-1400,-400], [width*3.5, height*3.5]], community_areas_geo)
-        // let unzoomed = chi_projection.fitSize([width, height], community_areas_geo);
-
+    function renderBaseMap(community_areas_geo: FeatureCollection, projection: d3.GeoProjection) {
         if (community_areas_geo == undefined) {
             console.warn("Data not loaded yet"); // a problem if you refresh the page while on this section
             return;
         }
-        
-        let chi_projection = setProjection(community_areas_geo, false);
-        //renderMap(community_areas_geo, chi_projection)
 
-        let geoGenerator = d3.geoPath().projection(chi_projection)
+        let geoGenerator = d3.geoPath().projection(projection)
     
         const path = svg.append('g')
             .selectAll("path") 
@@ -267,48 +280,19 @@
                 .ease(d3.easeLinear)
                 .attr("stroke-dashoffset", 0)
                 .duration(3000)
-
-        // TODO: put these somewhere else
-        getSchoolPoints(chi_projection);
     }
 
-    function renderZoomMap(community_areas_geo: FeatureCollection) {
-        if (community_areas_geo == undefined) {
-            console.warn("Data not loaded yet");
-            return;
-        }
-        let chi_projection = setProjection(community_areas_geo, true);
-
-        // change this so it updates the current map projection instead of buliding a whole new map, and with a transition
-        // renderMap(community_areas_geo, chi_projection)
+    function setZoomAspectRaio() {
+        svg
+            .transition()
+            .duration(1500)
+            .attr("viewBox", '100, 40, 100, 130');
     }
-
-    function setProjection(community_areas_geo: FeatureCollection, zoom: boolean) {
-        if (zoom) {
-            return d3.geoMercator().fitExtent([[-1400,-400], [width*3.5, height*3.5]], community_areas_geo)
-        }
-        return d3.geoMercator().fitSize([width, height], community_areas_geo);
-    }
-
-    function renderMap(community_areas_geo: FeatureCollection, projection: d3.GeoProjection) {
-        let geoGenerator = d3.geoPath().projection(projection);
-
-        const path = svg.append('g')
-            .attr("class", "chi_map") 
-            .selectAll("path") 
-            .data(community_areas_geo.features)
-            .join("path")
-                .attr("class", "comm_area")  
-                .attr('fill-opacity', 0)
-                .attr("stroke", '#fff') // make it the same color as the background to create gap effect
-                .attr("stroke-width", 0.8)
-                .attr("d", geoGenerator)
-                .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
-                .attr("stroke-dashoffset", d => geoGenerator.measure(d))
-                .transition()
-                .ease(d3.easeLinear)
-                .attr("stroke-dashoffset", 0)
-                .duration(4000)
+    function setNormalAspectRaio() {
+        svg
+            .transition()
+            .duration(1500)
+            .attr("viewBox", '0, 0, 300, 390');
     }
 
     function removeMap() {
@@ -316,7 +300,7 @@
             .transition()
             .duration(1000)
             .attr("fill-opacity", 0)
-            .remove(); // it's not waiting to remove
+            .remove(); // animations don't wait for removing
     }
 
     function renderCloropleth() {
@@ -335,6 +319,59 @@
             .attr("fill-opacity", 1)
             .attr("fill", "transparent");
     }
+
+    function setIntroText() {
+        svg.append("text")
+            .attr('y', height/2) 
+            .attr('font-size', "1rem")
+            .attr("font-weight", "500")
+            .attr("text-anchor", "middle")
+            .append("tspan")
+                .text("Every student should have access")
+                .attr("dy", "1rem")
+                .attr('x', width/2)
+            .append("tspan")
+                .text("to the transformative power of the arts.")
+                .attr("dy", "1.4rem")
+                .attr('x', width/2)
+
+    }
+
+    function showIntroText() {
+        svg.selectAll("text").attr("opacity", 1);
+        // d3.selectAll(".pixel")
+        //     .attr("opacitiy", 0);
+    }
+
+    function hideIntroText() {
+        // Add pixelated overlay (COMPUTATIONALLY EXPENSIVE)
+        // const pixelSize = 2;
+
+        // const pixels = [];
+        // for (let x = 0; x < width; x += pixelSize-1) {
+        //     for (let y = 0; y < height/9; y += pixelSize-1) {
+        //         pixels.push({ x, y });
+        //     }
+        // }
+
+        // svg.selectAll("rect")
+        //     .data(pixels)
+        //     .enter()
+        //     .append("rect")
+        //     .attr("class", "pixel")
+        //     .attr("x", d => d.x)
+        //     .attr("y", d => height/2 + d.y)
+        //     .attr("width", pixelSize)
+        //     .attr("height", pixelSize)
+        //     .attr("fill", "plum")
+        //     .attr("opacity", 0)
+        //     .transition()
+        //     .delay(() => Math.random() * 1000)
+        //     .duration(500)
+        //     .attr("opacity", 1);
+        // 
+        svg.selectAll("text").transition().duration(1500).attr("opacity", 0)
+    }
     
 </script>
 
@@ -348,4 +385,11 @@
     visibility: visible;
 } */
 
+/* :global(.pixel-blur) {
+  filter: blur(2px);
+} */
+
+:global(.canvas) {
+    margin-top: 10vh;
+ }
 </style>

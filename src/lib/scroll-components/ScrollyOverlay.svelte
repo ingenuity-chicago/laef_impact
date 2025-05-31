@@ -14,6 +14,8 @@
             // const width = sel.attr('data-width');
             // container.select('.bar-inner').style('width', width);
         }
+    
+    //OOOHHHH i should have step exited cases in certain direction to handle removing things? guess i could do the same for entering with a direction
 
     onMount(() => {
         init();
@@ -26,7 +28,7 @@
 
         scroller.setup({
 			step: '.scroll_text .step', // the step elements
-			offset: 0.9, // set the trigger to be 90% way down screen
+			offset: 1, // set the trigger to be 90% way down screen
 			debug: false, // display the trigger offset for testing
             progress: true
 		})
@@ -48,7 +50,6 @@
 </script>
 
 <main>
-Scrolly Overlay
     <section id='scrolly-overlay'>
         <!--  graphic container  -->
         <figure class='sticky_graphic_container'>
@@ -61,8 +62,8 @@ Scrolly Overlay
 
         <article class='scroll_text'>
             <div class="wrapper">
-                <div class="step" data-step="a">
-                    <p>Every student should have access to the transformative power of the arts. </p>
+                <div class="step hidden" data-step="a">
+                    <p>This will be hidden </p>
                 </div>
             </div>
 
@@ -97,33 +98,35 @@ Scrolly Overlay
 
             <div class="wrapper">
                 <div class="step" data-step="f">
-                    <p>STEP 5</p>
+                    <p>This example is just one of how the Lollapalooza Arts Education Fund (LAEF)  is expanding access to high-quality arts programming in Chicago Public Schools (CPS). This initiative represents a  $2.2 million investment over five years in CPS arts education through the Creative Schools Fund, which is managed by Ingenuity. 
+                    </p>
                 </div>
             </div>
 
             <div class="wrapper">
                 <div class="step" data-step="g">
-                    <p>STEP 6</p>
+                    <p>In a historic milestone, 99% of all CPS schools – 640 out of 649 – submitted arts education data in fall 2024. Collected from Ingenuity’s artlook® platform, this data fuels both sector-wide analyses in the State of the Arts  and school-level ratings through the Creative Schools Certification. Together, these insights inform strategic funding decisions for the Creative Schools Fund and the Lollapalooza Arts Education Fund.  </p>
                 </div>
             </div>
             <div class="wrapper">
                 <div class="step" data-step="h">
-                    <p>STEP 7</p>
+                    <p>$1,782,770 for 182 grants awarded to 99 CPS schools</p>
                 </div>
             </div>
             <div class="wrapper">
                 <div class="step" data-step="i">
-                    <p>STEP 8</p>
+                    <p>Including 82 elementary schools and 17 high schools</p>
                 </div>
             </div>
             <div class="wrapper">
                 <div class="step" data-step="j">
-                    <p>STEP 9</p>
+                    <p>55% of LAEF schools were rated as Developing or Emerging in 2021-22 on the Creative Schools Certification, compared to 28% of all CPS schools. The fund prioritizes schools with the least systemic access to arts education – identified through data collected and analyzed by Ingenuity. Developing or Emerging schools are those that occasionally or rarely meet the goals and priorities outlined in the CPS Arts Education Plan, indicating that students have less access to high-quality arts education. These schools earned 79 or fewer points out of 100 on the Creative Schools Certification. 
+                    </p>
                 </div>
             </div>
             <div class="wrapper">
                 <div class="step" data-step="k">
-                    <p>STEP 10</p>
+                    <p>LAEF investments have reached 52 out of 77 Chicago community areas, with a strong concentration on the south and west sides of the city. This focus reflects the fund’s commitment to prioritizing schools with less access to high-quality arts education.</p>
                 </div>
             </div>
         </article>
@@ -131,6 +134,10 @@ Scrolly Overlay
 </main>
 
 <style>
+
+main {
+    background-color: plum;
+}
 
 #scrolly-overlay {
 	max-width: 60rem;
@@ -141,15 +148,21 @@ Scrolly Overlay
 
 article {
     position: relative;
+    /* top: -50vh; */
     padding: 0;
     max-width: 30rem;
     margin: 0 auto;
     background-color: none;
     opacity: 0.7;
+    /* margin-top: 20vh; */
 }
 
 .wrapper {
-    min-height: 100vh;
+    min-height: 90vh;
+}
+.wrapper:first-of-type {
+    min-height: unset;
+    height: 15vh;
 }
 
 .step {			
@@ -176,11 +189,14 @@ article {
 
     &:global(.hidden) {
         visibility: hidden;
+        min-height: unset;
+        height: 10vh;
     }
 }
-.step:first-of-type {
+
+/* .step:first-of-type {
     margin-top: 90vh;
-}
+}*/
 
 .step:last-of-type {
     margin-bottom: 0;
