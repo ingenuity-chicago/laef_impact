@@ -1,2 +1,27 @@
-<h1>Welcome to the LAEF Impact Piece</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+    import ScrollyOverlay from "$lib/scroll-components/ScrollyOverlay.svelte";
+    import Intro from "$lib/sections/Intro.svelte";
+</script>
+
+<main>
+    <Intro></Intro>
+
+    <ScrollyOverlay></ScrollyOverlay>
+
+    <section id="overview">
+
+    </section>
+</main>
+
+<style>
+    main {
+        background-color: black;
+        margin: 0;
+        font-family: Avenir;
+    }
+
+    #overview {
+        height: 100vh;
+        background-color: rebeccapurple;
+    }
+</style>

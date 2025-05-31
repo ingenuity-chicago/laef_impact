@@ -17,6 +17,8 @@
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/kit": "^2.16.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"@types/d3": "^7.4.3",
+		"@types/topojson": "^3.2.6",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
 		"svelte": "^5.0.0",
@@ -25,6 +27,11 @@
 		"vite": "^6.2.6"
 	},
 	"dependencies": {
-		"@sveltejs/adapter-static": "^3.0.8"
+		"@sveltejs/adapter-static": "^3.0.8",
+		"@types/geojson": "^7946.0.16",
+		"d3": "^7.9.0",
+		"intersection-observer": "^0.12.2",
+		"scrollama": "^3.2.0",
+		"topojson": "^3.0.2"
 	}
 }
