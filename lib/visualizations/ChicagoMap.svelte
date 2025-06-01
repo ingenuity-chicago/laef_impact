@@ -75,7 +75,7 @@
         setIntroText();
 
         // loading data
-        d3.json<FeatureCollection>(`${base}/data/comm_areas_amt_granted.geojson`) 
+        d3.json<FeatureCollection>(`${base}/assets/comm_areas_amt_granted.geojson`) 
             .then((d) => {
                 let projection = setupMap(d);
                 getSchoolPoints(projection)      
@@ -144,7 +144,7 @@
     $effect(updateVis);
 
     function getSchoolPoints(chi_projection: d3.GeoProjection) {
-        d3.json<FeatureCollection>(`${base}/data/all_schools.geojson`) 
+        d3.json<FeatureCollection>(`${base}/assets/all_schools.geojson`) 
             .then(d => loadSchoolData(chi_projection, d))
             .catch((err) => {
                 console.log(err); // TODO: Handle error
