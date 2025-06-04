@@ -52,7 +52,7 @@ jobs:
       steps:
         - uses: actions/checkout@v4
 
-        - name: Deploy Src
+        - name: Deploy Build
           uses: peaceiris/actions-gh-pages@v4.0.0
           if: github.ref == 'refs/heads/main'
           with:
