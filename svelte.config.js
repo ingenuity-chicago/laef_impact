@@ -22,7 +22,7 @@ const config = {
 		}),
 		// paths: {
         //     //base: process.argv.includes('dev') ? '' : process.env.BASE_PATH ///portfolio
-		// 	base: process.env.NODE_ENV === 'production' ? '/' : '', // process.env.BASE_PATH ///portfolio
+		 	base: process.env.NODE_ENV === 'production' ? '/' : '', // process.env.BASE_PATH ///portfolio
         // }
 	}
 };
