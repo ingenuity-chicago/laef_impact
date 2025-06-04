@@ -57,7 +57,7 @@ jobs:
           if: github.ref == 'refs/heads/main'
           with:
             github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: ./src # deploy src folder
+            publish_dir: ./build # deploy build folder
 
         - name: Deploy to GitHub Pages
           id: deployment
