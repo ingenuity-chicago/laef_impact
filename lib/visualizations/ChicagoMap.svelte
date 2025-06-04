@@ -69,20 +69,21 @@
             .attr("width", "95%")
             .attr("height", "95%")
             .attr("viewBox", [0, 0, width, height]) //[-width/2, -height/2, width*2, height*2]
-            .attr("style", "max-height: 80vh;");
+            .attr("style", "max-height: 80vh;"); //position: absolute; width: 80vh; left:0;
         // decide if want to center map
 
         setIntroText();
 
         // loading data
-        d3.json<FeatureCollection>(`${base}/assets/comm_areas_amt_granted.geojson`) 
+        d3.json<FeatureCollection>(`${base}/assets/data/comm_areas_amt_granted.geojson`) 
             .then((d) => {
                 let projection = setupMap(d);
-                getSchoolPoints(projection)      
-            })
+                getSchoolPoints(projection);   
+            })              
             .catch((err) => {
                 console.log(err); // TODO: Handle error
             });
+
     }
 
     function updateVis(stepFromHash?: number) {
@@ -116,8 +117,11 @@
                 break;
             case 4:
                 // insert image of floors
+                loadImage(`${base}/assets/images/HauganDanceStudio.jpg`);
+                showImage();
                 break;
             case 5:
+                removeImage();
                 setNormalAspectRaio();
                 break;
             case 6:
@@ -144,7 +148,7 @@
     $effect(updateVis);
 
     function getSchoolPoints(chi_projection: d3.GeoProjection) {
-        d3.json<FeatureCollection>(`${base}/assets/all_schools.geojson`) 
+        d3.json<FeatureCollection>(`${base}/assets/data/all_schools.geojson`) 
             .then(d => loadSchoolData(chi_projection, d))
             .catch((err) => {
                 console.log(err); // TODO: Handle error
@@ -373,9 +377,43 @@
         svg.selectAll("text").transition().duration(1500).attr("opacity", 0)
     }
     
+    function loadImage(path: string) {
+        // const image = await d3.image(path);
+        // const imgContainer = d3.select(vis).append('div')
+        //     .attr("class", "image-container")
+        //     .attr('style', "position: absolute; height:100vh; width: 100vh; background: green")
+        
+        // imgContainer.append("image")
+        //     .attr("xlink:href", path)
+        //     .attr('style', "height: 100%; width: 100%;")
+        
+        svg.append('g').append("svg:image")
+            .attr('class','img')
+            .attr("xlink:href", path)
+            .attr('x', width/3)
+            .attr('y', height/6)
+            .attr('width', 100)
+            .attr('height', 100)
+            .attr('opacity', 0);
+    }
+
+    function showImage() {
+        svg.selectAll(".img")
+            .transition()
+            .duration(500)
+            .attr("opacity", 1);
+    }
+    
+    function removeImage() {
+        svg.selectAll(".img")
+            .transition()
+            .duration(500)
+            .attr("opacity", 0);
+    }
 </script>
 
 <main>
+    <div class="canvas"></div>
     <div id="vis" bind:this={vis}></div>
 </main>
 
@@ -388,6 +426,9 @@
 /* :global(.pixel-blur) {
   filter: blur(2px);
 } */
+ /* #vis {
+    position: relative;
+ } */
 
 :global(.canvas) {
     margin-top: 10vh;

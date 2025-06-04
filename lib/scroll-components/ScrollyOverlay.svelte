@@ -158,7 +158,7 @@ article {
 }
 
 .wrapper {
-    min-height: 90vh;
+    min-height: 95vh;
 }
 .wrapper:first-of-type {
     min-height: unset;
