@@ -162,6 +162,61 @@
         //     }
         //     return d3.geoMercator().fitSize([width, height], community_areas_geo);
         // }
+
+        function updateVis(stepFromHash?: number) {
+            // if (stepFromHash !== undefined) {
+            //     step = stepFromHash
+            // }
+            //console.log("step var: " + step);
+            switch (step.index) {
+                case 0:
+                    hideSchools();
+                    removeMap();
+                    showIntroText();
+                    break;
+                case 1: 
+                    hideIntroText();
+                    setNormalAspectRaio();
+                    renderBaseMap(community_areas_geo, projection);
+                    plotSchoolPoints();
+                    break;
+                case 2:
+                    svg.attr("viewBox", '0, 0, 300, 390');
+                    showSchools();
+                    showHaugan();
+                    break;
+                case 3: 
+                    setZoomAspectRaio();
+                    break;
+                case 4:
+                    // insert image of floors
+                    loadImage(`${base}/assets/images/HauganDanceStudio.jpg`);
+                    showImage();
+                    break;
+                case 5:
+                    removeImage();
+                    setNormalAspectRaio();
+                    break;
+                case 6:
+                    showAllSchools();
+                    break;
+                case 7:
+                    showLaefSchools();
+                    break;
+                case 8:
+                    showSchoolType();
+                    break;
+                case 9: 
+                    removeCloropleth();
+                    showSchools();
+                    showSchoolCert();
+                    break;
+                case 10:
+                    hideSchools();
+                    renderCloropleth();
+                    break;
+            } 
+        }
     }
 </script>
 

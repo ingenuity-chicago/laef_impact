@@ -11,9 +11,12 @@
     let width = 300;
     let height = 1.3*width;
     let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    let schoolsEl: d3.Selection<SVGCircleElement, Feature, HTMLElement, any>;
     let community_areas_geo: FeatureCollection;
     let schools: School[] = [];
     let projection: d3.GeoProjection;
+    let ready = false;
+    let path: d3.GeoPath<any, d3.GeoPermissibleObjects>;
 
     let { step } = $props();
 
@@ -71,91 +74,275 @@
             .attr("viewBox", [0, 0, width, height]) //[-width/2, -height/2, width*2, height*2]
             .attr("style", "max-height: 80vh;"); //position: absolute; width: 80vh; left:0;
         // decide if want to center map
+        loadData().then((d) => {
+            setIntroText();
+            loadImage(`${base}/assets/images/HauganDanceStudio.jpg`);
+        }).then(() => ready = true);
+    }
 
-        setIntroText();
-
+    async function loadData() {
         // loading data
-        d3.json<FeatureCollection>(`${base}/assets/data/comm_areas_amt_granted.geojson`) 
+        await d3.json<FeatureCollection>(`${base}/assets/data/comm_areas_amt_granted.geojson`) 
             .then((d) => {
+                console.log("map data loaded");
                 let projection = setupMap(d);
-                getSchoolPoints(projection);   
+                path = renderBaseMap(community_areas_geo, projection);
+                loadSchoolPoints(projection);   
+                return d;
             })              
             .catch((err) => {
                 console.log(err); // TODO: Handle error
             });
-
     }
 
     function updateVis(stepFromHash?: number) {
-        // if (stepFromHash !== undefined) {
-        //     step = stepFromHash
-        // }
-        console.log("step entered: " + step);
-        switch (step) {
-            case -1: // load maps and points but hide them
-                // hideSchools();
-                // removeMap();
-                break;
+        // how can i wait for init to happen before any of these steps
+        // if (!ready) { console.log("not ready"); return; } else { console.log ("ready!")}
+        switch (step.index) {
             case 0:
-                hideSchools();
-                removeMap();
-                showIntroText();
+                //drawBaseMap(path)
+                renderVisState({
+                    showSchools: false,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: true,
+                    showCloropleth: false
+                }, undefined, true)
+                // setNormalAspectRaio();
+                // showIntroText();
                 break;
             case 1: 
-                hideIntroText();
-                setNormalAspectRaio();
-                renderBaseMap(community_areas_geo, projection);
-                plotSchoolPoints();
+                renderVisState({
+                    showSchools: false,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: false,
+                    showCloropleth: false
+                });
+                // hideIntroText();
+                // hideSchools();
                 break;
             case 2:
-                svg.attr("viewBox", '0, 0, 300, 390');
-                showSchools();
+                renderVisState({
+                    showSchools: true,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: false,
+                    showCloropleth: false
+                }, "HAUGAN");
+
+                // showSchools();
                 showHaugan();
+                // if (step.direction === "up") {
+                //     svg.transition().duration(1000).attr("viewBox", '0, 0, 300, 390');
+                //     hideImage();
+                // }
                 break;
             case 3: 
-                setZoomAspectRaio();
+                renderVisState({
+                    showSchools: true,
+                    showImage: false,
+                    zoom: true,
+                    showIntroText: false,
+                    showCloropleth: false
+                }, "HAUGAN");
+                // setZoomAspectRaio();
                 break;
-            case 4:
-                // insert image of floors
-                loadImage(`${base}/assets/images/HauganDanceStudio.jpg`);
-                showImage();
+            case 4:   
+                renderVisState({
+                    showSchools: true,
+                    showImage: true,
+                    zoom: true,
+                    showIntroText: false,
+                    showCloropleth: false
+                }, "HAUGAN");
+                //showImage();
                 break;
             case 5:
-                removeImage();
-                setNormalAspectRaio();
+                renderVisState({
+                    showSchools: true,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: false,
+                    showCloropleth: false
+                }, "HAUGAN");
+                // hideImage();
+                // setNormalAspectRaio();
+                // if (step.direction === "up") {
+                //     showHaugan();
+                // }
                 break;
             case 6:
-                showAllSchools();
+                renderVisState({
+                    showSchools: true,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: false,
+                    showCloropleth: false
+                }, "ALL");
+                // showAllSchools();
                 break;
             case 7:
-                showLaefSchools();
+                renderVisState({
+                    showSchools: true,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: false,
+                    showCloropleth: false
+                }, "LAEF");
+                //showLaefSchools();
                 break;
             case 8:
-                showSchoolType();
+                renderVisState({
+                    showSchools: true,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: false,
+                    showCloropleth: false
+                }, "TYPE");
+                // showSchoolType();
                 break;
             case 9: 
-                removeCloropleth();
-                showSchools();
-                showSchoolCert();
+                renderVisState({
+                    showSchools: true,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: false,
+                    showCloropleth: false
+                }, "CERTIFICATION");
+                // hideCloropleth();
+                // showSchools();
+                // showSchoolCert();
                 break;
             case 10:
-                hideSchools();
-                renderCloropleth();
+                renderVisState({
+                    showSchools: false,
+                    showImage: false,
+                    zoom: false,
+                    showIntroText: false,
+                    showCloropleth: true
+                });
+                // hideSchools();
+                // showCloropleth();
                 break;
         } 
     }
 
     $effect(updateVis);
 
-    function getSchoolPoints(chi_projection: d3.GeoProjection) {
+    /* HANDLING VIZ UPDATES */
+
+    interface VisState {
+        showSchools: Boolean;
+        showImage: Boolean;
+        zoom: Boolean;
+        showIntroText: Boolean;
+        showCloropleth: Boolean;
+    }   
+    
+    type SchoolState = "HAUGAN" | "ALL" | "LAEF" | "CERTIFICATION" | "TYPE";
+
+    function renderVisState(state: VisState, schoolState?: SchoolState, first: boolean = false) {
+        console.log("render viz state");
+        if (state.showCloropleth) { showCloropleth(); } 
+            else { first ? drawBaseMap(path) : showMap(); }
+        state.showImage ? showImage() : hideImage();
+        state.zoom ? setZoomAspectRaio() : setNormalAspectRaio();
+        state.showIntroText ? showIntroText() : hideIntroText();
+
+
+        if (schoolState) {
+            switch(schoolState) {
+                case("HAUGAN"):
+                    showHaugan();
+                    break;
+                case("ALL"):
+                    showAllSchools();
+                    break;
+                case("LAEF"):
+                    showLaefSchools();
+                    break;
+                case("CERTIFICATION"):
+                    showSchoolCert();
+                    break;
+                case("TYPE"):
+                    showSchoolType();
+                    break;
+            }
+        }
+
+        state.showSchools ? showSchools() : hideSchools();
+        
+    }
+
+    /* LOADING AND RENDERING GEOJSON DATA */
+
+    function setupMap(geodata?: FeatureCollection): d3.GeoProjection {
+        if (geodata === undefined) { console.log("geodata undefined"); return d3.geoMercator(); }
+        
+        community_areas_geo = loadFeatureCollection(geodata) as FeatureCollection;
+        const chi_projection = d3.geoMercator().fitSize([width, height], community_areas_geo);
+        projection = chi_projection;
+        return chi_projection;
+    }
+
+    function loadFeatureCollection(geodata: FeatureCollection) {
+        const chiTopo = topojsonS.topology({"community_areas": geodata});    
+        return topojsonC.feature(chiTopo, chiTopo.objects.community_areas) as FeatureCollection;       
+        // .text(d => `${d.properties.name}, ${statemap.get(d.id.slice(0, 2)).properties.name}\n${valuemap.get(d.id)}%`); 
+    }
+
+    function renderBaseMap(community_areas_geo: FeatureCollection, projection: d3.GeoProjection): d3.GeoPath<any, d3.GeoPermissibleObjects> {
+        if (community_areas_geo == undefined) {
+            console.warn("Data not loaded yet"); // a problem if you refresh the page while on this section
+            return d3.geoPath();
+        }
+
+        let geoGenerator = d3.geoPath().projection(projection)
+        
+        console.log("adding map to canvas");
+        svg.append('g')
+            .selectAll("path") 
+            .data(community_areas_geo.features)
+            .join("path")
+                .attr("class", "comm_area")  
+                .attr('fill-opacity', 0)
+                .attr("stroke", '#fff') // make it the same color as the background to create gap effect
+                .attr("stroke-width", 0.8)
+                .attr("d", geoGenerator)
+                .attr("visibility", "hidden");
+                // .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
+                // .attr("stroke-dashoffset", d => geoGenerator.measure(d))
+                // .transition()
+                // .ease(d3.easeLinear)
+                // .attr("stroke-dashoffset", 0)
+                // .duration(3000)
+        
+        return geoGenerator;
+    }
+
+    function drawBaseMap(geoGenerator: d3.GeoPath<any, d3.GeoPermissibleObjects>) {
+        d3.selectAll<SVGPathElement, Feature>(".comm_area")
+                .attr("visibility", "visible")
+                .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
+                .attr("stroke-dashoffset", d => geoGenerator.measure(d))
+                .transition()
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0)
+                .duration(2500)
+        console.log("draw map")
+    }
+
+    function loadSchoolPoints(chi_projection: d3.GeoProjection) {
         d3.json<FeatureCollection>(`${base}/assets/data/all_schools.geojson`) 
-            .then(d => loadSchoolData(chi_projection, d))
+            .then(d => processSchoolData(chi_projection, d))
+            .then(plotSchoolPoints)
             .catch((err) => {
                 console.log(err); // TODO: Handle error
             });
     }
 
-    function loadSchoolData(chi_projection: d3.GeoProjection, geodata?: FeatureCollection) {
+    function processSchoolData(chi_projection: d3.GeoProjection, geodata?: FeatureCollection) {
         if (geodata === undefined) { return; }
         const schools_topo = topojsonS.topology({"schools": geodata});    
         const schools_geo = topojsonC.feature(schools_topo, schools_topo.objects.schools) as FeatureCollection;
@@ -170,10 +357,11 @@
                     count_partnerships: +d.properties?.count_partnerships,
                     laef: d.properties?.laef == "TRUE",
                 },
-                coordinates: projection((d.geometry as GeoJSON.Point).coordinates as [number, number])!
+                coordinates: chi_projection((d.geometry as GeoJSON.Point).coordinates as [number, number])!
             }
             schools.push(school);
         });
+        console.log("school data loaded");
     }
 
     function plotSchoolPoints() {
@@ -181,17 +369,21 @@
             .data(schools)
             .enter()
             .append("circle")
-            .raise()
             .attr("class", "school")  
             .classed("laef", (d) => d.properties?.laef)
             .attr("r", 3)
             .attr("cx", d => d.coordinates[0])
             .attr("cy", d => d.coordinates[1])
             .attr("fill", "transparent");
+        
+        console.log("school data plotted");
+        schoolsEl = d3.selectAll<SVGCircleElement, Feature>(".school");
     }
 
+/* Viz manipulation */
+
     function showHaugan() {
-        d3.selectAll<SVGCircleElement, Feature>(".school")
+        schoolsEl
             .transition()
             .duration(1500)
             .attr("r", 4)
@@ -200,7 +392,7 @@
     }
 
     function showAllSchools() {
-        d3.selectAll<SVGCircleElement, Feature>(".school")
+        schoolsEl
             .transition()
             .duration(1000)
             .attr("r", 1.5)
@@ -208,7 +400,7 @@
     }
 
     function showLaefSchools() {
-        d3.selectAll<SVGCircleElement, Feature>(".school") // could change this to just access .laef
+        schoolsEl
             .transition()
             .duration(1000)
             .attr("r", 3)
@@ -217,73 +409,49 @@
     }
 
     function showSchoolType() {
-        d3.selectAll<SVGCircleElement, Feature>(".laef")
+        schoolsEl
             .transition()
             .duration(1000)
+            .attr("r", 3)
             .attr("fill", function(d) {         
-                return  colorMap[d.properties?.category] } )
+                return  d.properties?.laef ? colorMap[d.properties?.category] :  "transparent"} )
     }
 
     function showSchoolCert() {
-        d3.selectAll<SVGCircleElement, Feature>(".laef")
+        schoolsEl
             .transition()
             .duration(1000)
+            .attr("r", 3)
             .attr("fill", function(d) {        
-                return  colorMap[d.properties?.certification] } )
+                return  d.properties?.laef ? colorMap[d.properties?.certification] :  "transparent"} )
     }
 
     function showSchools() {
-        d3.selectAll<SVGCircleElement, Feature>(".school")
-            .transition()
-            .duration(1000)
-            .attr("visibility", "visible");
+        schoolsEl
+            .attr("opacity", 1);
+            // .transition()
+            // .duration(1000)
+            //.attr("visibility", "visible");
     }
     function hideSchools() {
-        d3.selectAll<SVGCircleElement, Feature>(".school")
+        if (!schoolsEl) { return; }
+        schoolsEl
             .transition()
-            .duration(2000)
-            .attr("visibility", "hidden"); // i think the transition duration doesn't work on this as much as transparency
+            .duration(1000)
+            .attr("opacity", 0)
+            //.attr("visibility", "hidden"); // i think the transition duration doesn't work on this as much as transparency
     }
 
-    function setupMap(geodata?: FeatureCollection): d3.GeoProjection {
-        if (geodata === undefined) { console.log("geodata undefined"); return d3.geoMercator(); }
-        
-        community_areas_geo = loadFeatureCollection(geodata) as FeatureCollection;
-        const chi_projection = d3.geoMercator().fitSize([width, height], community_areas_geo);
-        projection = chi_projection;
-        return chi_projection;
-        //renderBaseMap(community_areas_geo);
-    }
-
-    function loadFeatureCollection(geodata: FeatureCollection) {
-        const chiTopo = topojsonS.topology({"community_areas": geodata});    
-        return topojsonC.feature(chiTopo, chiTopo.objects.community_areas) as FeatureCollection;       
-        // .text(d => `${d.properties.name}, ${statemap.get(d.id.slice(0, 2)).properties.name}\n${valuemap.get(d.id)}%`); 
-    }
-
-    function renderBaseMap(community_areas_geo: FeatureCollection, projection: d3.GeoProjection) {
-        if (community_areas_geo == undefined) {
-            console.warn("Data not loaded yet"); // a problem if you refresh the page while on this section
-            return;
-        }
-
-        let geoGenerator = d3.geoPath().projection(projection)
-    
-        const path = svg.append('g')
-            .selectAll("path") 
-            .data(community_areas_geo.features)
-            .join("path")
-                .attr("class", "comm_area")  
-                .attr('fill-opacity', 0)
-                .attr("stroke", '#fff') // make it the same color as the background to create gap effect
-                .attr("stroke-width", 0.8)
-                .attr("d", geoGenerator)
-                .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
-                .attr("stroke-dashoffset", d => geoGenerator.measure(d))
-                .transition()
-                .ease(d3.easeLinear)
-                .attr("stroke-dashoffset", 0)
-                .duration(3000)
+    function showMap() {
+        d3.selectAll<SVGPathElement, Feature>(".comm_area")
+            .attr("visibility", "visible")
+            .transition()
+            .duration(1000)
+            .attr("fill-opacity", 0)
+            .attr("fill", "transparent")
+            .attr("stroke", '#fff') // make it the same color as the background to create gap effect
+            .attr("stroke-width", 0.8)
+        console.log("show map");
     }
 
     function setZoomAspectRaio() {
@@ -299,15 +467,15 @@
             .attr("viewBox", '0, 0, 300, 390');
     }
 
-    function removeMap() {
-        d3.selectAll<SVGPathElement, Feature>(".comm_area")
-            .transition()
-            .duration(1000)
-            .attr("fill-opacity", 0)
-            .remove(); // animations don't wait for removing
-    }
+    // function removeMap() {
+    //     d3.selectAll<SVGPathElement, Feature>(".comm_area")
+    //         .transition()
+    //         .duration(1000)
+    //         .attr("fill-opacity", 0)
+    //         .remove(); // animations don't wait for removing
+    // }
 
-    function renderCloropleth() {
+    function showCloropleth() {
         d3.selectAll<SVGPathElement, Feature>(".comm_area")
             .transition()
             .duration(1000)
@@ -316,13 +484,13 @@
                 return colorMap[(d.properties?.plt_bck)]} )
     }
 
-    function removeCloropleth() {
-        d3.selectAll<SVGPathElement, Feature>(".comm_area")
-            .transition()
-            .duration(1000)
-            .attr("fill-opacity", 1)
-            .attr("fill", "transparent");
-    }
+    // function hideCloropleth() {
+    //     d3.selectAll<SVGPathElement, Feature>(".comm_area")
+    //         .transition()
+    //         .duration(500)
+    //         .attr("fill-opacity", 0)
+            // .attr("fill", "transparent");
+    //}
 
     function setIntroText() {
         svg.append("text")
@@ -330,6 +498,7 @@
             .attr('font-size', "1rem")
             .attr("font-weight", "500")
             .attr("text-anchor", "middle")
+            .attr("opacity", 0)
             .append("tspan")
                 .text("Every student should have access")
                 .attr("dy", "1rem")
@@ -338,11 +507,13 @@
                 .text("to the transformative power of the arts.")
                 .attr("dy", "1.4rem")
                 .attr('x', width/2)
+        console.log("adding text to canvas");
 
     }
 
     function showIntroText() {
-        svg.selectAll("text").attr("opacity", 1);
+        svg.selectAll("text").transition().duration(2000).attr("opacity", 1);
+        console.log("showing text to canvas");
         // d3.selectAll(".pixel")
         //     .attr("opacitiy", 0);
     }
@@ -374,7 +545,7 @@
         //     .duration(500)
         //     .attr("opacity", 1);
         // 
-        svg.selectAll("text").transition().duration(1500).attr("opacity", 0)
+        svg.selectAll("text").transition().duration(1500).attr("opacity", 0);
     }
     
     function loadImage(path: string) {
@@ -404,7 +575,7 @@
             .attr("opacity", 1);
     }
     
-    function removeImage() {
+    function hideImage() {
         svg.selectAll(".img")
             .transition()
             .duration(500)
