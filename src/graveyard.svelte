@@ -217,6 +217,50 @@
                     break;
             } 
         }
+
+            // function removeMap() {
+    //     d3.selectAll<SVGPathElement, Feature>(".comm_area")
+    //         .transition()
+    //         .duration(1000)
+    //         .attr("fill-opacity", 0)
+    //         .remove(); // animations don't wait for removing
+    // }
+
+        // function hideCloropleth() {
+    //     d3.selectAll<SVGPathElement, Feature>(".comm_area")
+    //         .transition()
+    //         .duration(500)
+    //         .attr("fill-opacity", 0)
+            // .attr("fill", "transparent");
+    //}
+
+    //hide intro text
+            // Add pixelated overlay (COMPUTATIONALLY EXPENSIVE)
+        // const pixelSize = 2;
+
+        // const pixels = [];
+        // for (let x = 0; x < width; x += pixelSize-1) {
+        //     for (let y = 0; y < height/9; y += pixelSize-1) {
+        //         pixels.push({ x, y });
+        //     }
+        // }
+
+        // svg.selectAll("rect")
+        //     .data(pixels)
+        //     .enter()
+        //     .append("rect")
+        //     .attr("class", "pixel")
+        //     .attr("x", d => d.x)
+        //     .attr("y", d => height/2 + d.y)
+        //     .attr("width", pixelSize)
+        //     .attr("height", pixelSize)
+        //     .attr("fill", "plum")
+        //     .attr("opacity", 0)
+        //     .transition()
+        //     .delay(() => Math.random() * 1000)
+        //     .duration(500)
+        //     .attr("opacity", 1);
+        // 
     }
 </script>
 
@@ -224,4 +268,15 @@
     <div id="vis" bind:this={vis}></div>
 </main>
 
-<style></style>
+<style>
+    /* :global(.inactive){
+    visibility: visible;
+} */
+
+/* :global(.pixel-blur) {
+  filter: blur(2px);
+} */
+ /* #vis {
+    position: relative;
+ } */
+</style>

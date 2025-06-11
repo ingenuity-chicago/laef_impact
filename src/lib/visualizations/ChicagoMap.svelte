@@ -1,5 +1,4 @@
 <script lang="ts">
-    import scrollama from "scrollama";
     import * as d3 from 'd3';
     import { onMount } from 'svelte';
     import { base } from '$app/paths';
@@ -17,6 +16,7 @@
     let projection: d3.GeoProjection;
     let ready = false;
     let path: d3.GeoPath<any, d3.GeoPermissibleObjects>;
+    let drawingInProgress: boolean = false;
 
     let { step } = $props();
 
@@ -311,17 +311,12 @@
                 .attr("stroke-width", 0.8)
                 .attr("d", geoGenerator)
                 .attr("visibility", "hidden");
-                // .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
-                // .attr("stroke-dashoffset", d => geoGenerator.measure(d))
-                // .transition()
-                // .ease(d3.easeLinear)
-                // .attr("stroke-dashoffset", 0)
-                // .duration(3000)
         
         return geoGenerator;
     }
 
     function drawBaseMap(geoGenerator: d3.GeoPath<any, d3.GeoPermissibleObjects>) {
+        drawingInProgress = true;
         d3.selectAll<SVGPathElement, Feature>(".comm_area")
                 .attr("visibility", "visible")
                 .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
@@ -329,8 +324,7 @@
                 .transition()
                 .ease(d3.easeLinear)
                 .attr("stroke-dashoffset", 0)
-                .duration(2500)
-        console.log("draw map")
+                .duration(2500).on("end", () => drawingInProgress = false);
     }
 
     function loadSchoolPoints(chi_projection: d3.GeoProjection) {
@@ -443,10 +437,16 @@
     }
 
     function showMap() {
+        if (drawingInProgress) {
+            return;
+        }
+
         d3.selectAll<SVGPathElement, Feature>(".comm_area")
             .attr("visibility", "visible")
+            // .attr("stroke-opacity", 0)
             .transition()
-            .duration(1000)
+            .duration(2500)
+            // .attr("stroke-opacity", 1)
             .attr("stroke-dashoffset", 0)
             .attr("stroke-dasharray", "unset")
             .attr("fill-opacity", 0)
@@ -469,30 +469,15 @@
             .attr("viewBox", '0, 0, 300, 390');
     }
 
-    // function removeMap() {
-    //     d3.selectAll<SVGPathElement, Feature>(".comm_area")
-    //         .transition()
-    //         .duration(1000)
-    //         .attr("fill-opacity", 0)
-    //         .remove(); // animations don't wait for removing
-    // }
-
     function showCloropleth() {
         d3.selectAll<SVGPathElement, Feature>(".comm_area")
             .transition()
             .duration(1000)
+            // .attr("stroke", 'plum')
             .attr("fill-opacity", 1)
             .attr("fill", function(d) {
                 return colorMap[(d.properties?.plt_bck)]} )
     }
-
-    // function hideCloropleth() {
-    //     d3.selectAll<SVGPathElement, Feature>(".comm_area")
-    //         .transition()
-    //         .duration(500)
-    //         .attr("fill-opacity", 0)
-            // .attr("fill", "transparent");
-    //}
 
     function setIntroText() {
         svg.append("text")
@@ -521,32 +506,6 @@
     }
 
     function hideIntroText() {
-        // Add pixelated overlay (COMPUTATIONALLY EXPENSIVE)
-        // const pixelSize = 2;
-
-        // const pixels = [];
-        // for (let x = 0; x < width; x += pixelSize-1) {
-        //     for (let y = 0; y < height/9; y += pixelSize-1) {
-        //         pixels.push({ x, y });
-        //     }
-        // }
-
-        // svg.selectAll("rect")
-        //     .data(pixels)
-        //     .enter()
-        //     .append("rect")
-        //     .attr("class", "pixel")
-        //     .attr("x", d => d.x)
-        //     .attr("y", d => height/2 + d.y)
-        //     .attr("width", pixelSize)
-        //     .attr("height", pixelSize)
-        //     .attr("fill", "plum")
-        //     .attr("opacity", 0)
-        //     .transition()
-        //     .delay(() => Math.random() * 1000)
-        //     .duration(500)
-        //     .attr("opacity", 1);
-        // 
         svg.selectAll("text").transition().duration(1500).attr("opacity", 0);
     }
     
@@ -592,18 +551,8 @@
 
 <style>
 
-/* :global(.inactive){
-    visibility: visible;
-} */
-
-/* :global(.pixel-blur) {
-  filter: blur(2px);
-} */
- /* #vis {
-    position: relative;
- } */
-
 :global(.canvas) {
     margin-top: 10vh;
  }
+ 
 </style>
