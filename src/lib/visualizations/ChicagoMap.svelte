@@ -447,6 +447,8 @@
             .attr("visibility", "visible")
             .transition()
             .duration(1000)
+            .attr("stroke-dashoffset", 0)
+            .attr("stroke-dasharray", "unset")
             .attr("fill-opacity", 0)
             .attr("fill", "transparent")
             .attr("stroke", '#fff') // make it the same color as the background to create gap effect
