@@ -1,6 +1,5 @@
 <script lang="ts">
     import scrollama from "scrollama";
-    import * as d3 from 'd3';
     import { onMount } from 'svelte';
 	import ChicagoMap from "$lib/visualizations/ChicagoMap.svelte";
 
@@ -141,7 +140,7 @@ main {
 #scrolly-overlay {
 	max-width: 60rem;
 	margin: 3rem auto;
-	background-color: plum;
+	background-color: rgb(82, 207, 242);
 	padding: 1rem;
 }
 

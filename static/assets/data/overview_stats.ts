@@ -31,3 +31,28 @@ export const disciplineData: DisciplineInfo[] = [
         num_schools_offering: 23,
     },
 ]
+
+export interface Enrollment {
+    school_year: string,
+    num_students: number
+}
+
+export const enrollmentData: Enrollment[] = [
+    {
+        school_year: "2022",
+        num_students: 22352
+    },
+    {
+        school_year: "2023",
+        num_students: 18666
+    },
+    {
+        school_year: "2024",
+        num_students: 12140
+    },
+    {
+        school_year: "2025",
+        num_students: 12717
+    },
+
+]

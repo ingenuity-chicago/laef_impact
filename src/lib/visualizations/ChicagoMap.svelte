@@ -33,8 +33,8 @@
         "$70,001 - $110,000": "#27663b",
         "laef": "purple",
         "5": "transparent", // incomplete_data
-        "4": "yellow", // emerging
-        "3": "green", // developing
+        "4": "#FFC20E", // emerging
+        "3": "#ADD363", // developing
         "2": "transparent", // strong
         "1": "transparent", // excelling
         "high_school": "orange",
@@ -100,7 +100,6 @@
         // if (!ready) { console.log("not ready"); return; } else { console.log ("ready!")}
         switch (step.index) {
             case 0:
-                //drawBaseMap(path)
                 renderVisState({
                     showSchools: false,
                     showImage: false,
@@ -108,19 +107,15 @@
                     showIntroText: true,
                     showCloropleth: false
                 }, undefined, true)
-                // setNormalAspectRaio();
-                // showIntroText();
                 break;
             case 1: 
                 renderVisState({
                     showSchools: false,
                     showImage: false,
                     zoom: false,
-                    showIntroText: false,
+                    showIntroText: true,
                     showCloropleth: false
                 });
-                // hideIntroText();
-                // hideSchools();
                 break;
             case 2:
                 renderVisState({
@@ -130,13 +125,6 @@
                     showIntroText: false,
                     showCloropleth: false
                 }, "HAUGAN");
-
-                // showSchools();
-                showHaugan();
-                // if (step.direction === "up") {
-                //     svg.transition().duration(1000).attr("viewBox", '0, 0, 300, 390');
-                //     hideImage();
-                // }
                 break;
             case 3: 
                 renderVisState({
@@ -146,7 +134,6 @@
                     showIntroText: false,
                     showCloropleth: false
                 }, "HAUGAN");
-                // setZoomAspectRaio();
                 break;
             case 4:   
                 renderVisState({
@@ -156,7 +143,6 @@
                     showIntroText: false,
                     showCloropleth: false
                 }, "HAUGAN");
-                //showImage();
                 break;
             case 5:
                 renderVisState({
@@ -166,11 +152,6 @@
                     showIntroText: false,
                     showCloropleth: false
                 }, "HAUGAN");
-                // hideImage();
-                // setNormalAspectRaio();
-                // if (step.direction === "up") {
-                //     showHaugan();
-                // }
                 break;
             case 6:
                 renderVisState({
@@ -180,7 +161,6 @@
                     showIntroText: false,
                     showCloropleth: false
                 }, "ALL");
-                // showAllSchools();
                 break;
             case 7:
                 renderVisState({
@@ -190,7 +170,6 @@
                     showIntroText: false,
                     showCloropleth: false
                 }, "LAEF");
-                //showLaefSchools();
                 break;
             case 8:
                 renderVisState({
@@ -200,7 +179,6 @@
                     showIntroText: false,
                     showCloropleth: false
                 }, "TYPE");
-                // showSchoolType();
                 break;
             case 9: 
                 renderVisState({
@@ -210,9 +188,6 @@
                     showIntroText: false,
                     showCloropleth: false
                 }, "CERTIFICATION");
-                // hideCloropleth();
-                // showSchools();
-                // showSchoolCert();
                 break;
             case 10:
                 renderVisState({
@@ -222,8 +197,6 @@
                     showIntroText: false,
                     showCloropleth: true
                 });
-                // hideSchools();
-                // showCloropleth();
                 break;
         } 
     }
@@ -307,6 +280,7 @@
             .join("path")
                 .attr("class", "comm_area")  
                 .attr('fill-opacity', 0)
+                .attr('fill', "transparent")
                 .attr("stroke", '#fff') // make it the same color as the background to create gap effect
                 .attr("stroke-width", 0.8)
                 .attr("d", geoGenerator)
@@ -319,6 +293,7 @@
         drawingInProgress = true;
         d3.selectAll<SVGPathElement, Feature>(".comm_area")
                 .attr("visibility", "visible")
+                .attr("fill-opacity", 0)
                 .attr("stroke-dasharray", d => geoGenerator.measure(d) + " " + geoGenerator.measure(d))
                 .attr("stroke-dashoffset", d => geoGenerator.measure(d))
                 .transition()
@@ -450,7 +425,6 @@
             .attr("stroke-dashoffset", 0)
             .attr("stroke-dasharray", "unset")
             .attr("fill-opacity", 0)
-            .attr("fill", "transparent")
             .attr("stroke", '#fff') // make it the same color as the background to create gap effect
             .attr("stroke-width", 0.8)
         console.log("show map");
@@ -483,7 +457,10 @@
         svg.append("text")
             .attr('y', height/2) 
             .attr('font-size', "1rem")
-            .attr("font-weight", "500")
+            .attr("font-weight", "700")
+            // .attr("fill", "#9300dd")
+            // .attr("stroke", "black")
+            // .attr("stroke-width", 0.4)
             .attr("text-anchor", "middle")
             .attr("opacity", 0)
             .append("tspan")
@@ -499,7 +476,7 @@
     }
 
     function showIntroText() {
-        svg.selectAll("text").transition().duration(2000).attr("opacity", 1);
+        svg.selectAll("text").transition().duration(1500).attr("opacity", 1);
         console.log("showing text to canvas");
         // d3.selectAll(".pixel")
         //     .attr("opacitiy", 0);
@@ -554,5 +531,5 @@
 :global(.canvas) {
     margin-top: 10vh;
  }
- 
+
 </style>
