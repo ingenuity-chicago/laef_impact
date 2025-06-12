@@ -12,7 +12,7 @@
 
 <style>
     main {
-        background-color: black;
+        background-color: rgb(2, 86, 72);
         height: 100vh;
     }
     

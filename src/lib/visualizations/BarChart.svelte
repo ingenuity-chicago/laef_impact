@@ -58,6 +58,7 @@
         flex-direction: column;
         color: white;
         align-items: center;
+        margin-top: 0;
     }
 
     .bar-chart {

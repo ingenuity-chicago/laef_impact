@@ -7,13 +7,16 @@
 </script>
 
 <main>
-    <Intro></Intro>
 
-    <Overview></Overview>
+    <div class="content">
+        <Intro></Intro>
 
-    <BeforeAfterLaef></BeforeAfterLaef>
+        <Overview></Overview>
 
-    <WaffleSection></WaffleSection>
+        <BeforeAfterLaef></BeforeAfterLaef>
+
+        <WaffleSection></WaffleSection>
+    </div>
 
 </main>
 
@@ -22,5 +25,9 @@
         background-color: black;
         margin: 0;
         font-family: Avenir;
+    }
+
+    .content {
+        margin: 2.5rem;
     }
 </style>
